@@ -5,6 +5,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
+import { CATEGORIES } from "@/lib/constants";
 
 interface Props {
   open: boolean;
@@ -13,21 +14,12 @@ interface Props {
   onCreated: (work: { id: string }) => void;
 }
 
-const CATEGORIES = [
-  "Filme",
-  "Série",
-  "Livro",
-  "Anime",
-  "Jogo",
-  "Documentário",
-  "Outro",
-];
-
 export function CreateWorkModal({ open, onClose, initialTitle = "", onCreated }: Props) {
   const [originalTitle, setOriginalTitle] = useState(initialTitle);
   const [category, setCategory] = useState("Filme");
   const [year, setYear] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
+  const [tags, setTags] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -43,6 +35,12 @@ export function CreateWorkModal({ open, onClose, initialTitle = "", onCreated }:
     setError("");
     setLoading(true);
 
+    const tagList = tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .slice(0, 12);
+
     try {
       const res = await fetch("/api/works", {
         method: "POST",
@@ -52,6 +50,7 @@ export function CreateWorkModal({ open, onClose, initialTitle = "", onCreated }:
           category,
           year: year ? parseInt(year) : null,
           coverUrl: coverUrl.trim() || null,
+          tags: tagList,
         }),
       });
 
@@ -121,6 +120,16 @@ export function CreateWorkModal({ open, onClose, initialTitle = "", onCreated }:
             value={coverUrl}
             onChange={(e) => setCoverUrl(e.target.value)}
             placeholder="https://..."
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="tags">Tags (opcional, separadas por virgula)</Label>
+          <Input
+            id="tags"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="drama, ficcao, classico"
           />
         </div>
 
